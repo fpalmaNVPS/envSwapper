@@ -5,7 +5,7 @@ function fetchButtons() {
 // div that we will use in order to add new buttons to that section
 	let page = document.getElementById('buttonDiv');
 
-	//get the List of the Urls
+	//get the list of the urls
 	// make a button for each url
 	chrome.storage.local.get({userKeyIds: []}, function(result){
 		result.userKeyIds.forEach(function(result){
@@ -14,12 +14,10 @@ function fetchButtons() {
 			// checking the current background tab to see if it matches any of the url buttons
 			// if so, highlight its border
 			chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
-				let currentBackgroundUrl = tabs[0].url.split('/');
+				let currentbackgroundurl = tabs[0].url.split('/');
 
-				if(currentBackgroundUrl[2].substring(0, 4) === "www." && currentBackgroundUrl[2].substring(4) === result.keyPairId){
-					button.style.border = "thick solid 	#FF0000";
-				} else if(currentBackgroundUrl[2] === result.keyPairId){
-					button.style.border = "thick solid 	#FF0000";
+				if((currentbackgroundurl[2].substring(0, 4) === "www." && currentbackgroundurl[2].substring(4) === result.keypairid) || currentbackgroundurl[2] === result.keypairid){
+					button.style.border = "thick solid 	#ff0000";
 				}
 			})
 			
@@ -69,26 +67,43 @@ function addButton(keyPairId) {
 function createButton(url){
 	
 	// setting the passed url into storage
-	let button = document.createElement('button');
+	let button = document.createElement("button");
 	//creating unique id for each button
 
 	button.classList.add("circle-btn");
 
 	button.id = getUniqueId();
 
+	if(url.includes("google")){
+		button.style.backgroundImage = "url(assets/google.png)";
+	} else if(url.includes("facebook")){
+		button.style.backgroundImage = "url(assets/facebook.png)";
+	} else if(url.includes("firebase")){
+		button.style.backgroundImage = "url(assets/firebase.png)";
+	} else if(url.includes("github")){
+		button.style.backgroundImage = "url(assets/github.png)";
+	} else if(url.includes("newvisions")){
+		button.style.backgroundImage = "url(assets/newvisions.png)";
+	} else{
+		// button.style.background = "#9400D3";
+		button.style.color = "white";
+		button.style.value = url.charAt(0);
+	}
+
+	button.style.backgroundRepeat = "no-repeat";
+
 	// create event listener that when pressed it replaces the current page url
 
 	button.addEventListener('click', function(){
+		console.log(button.style.backgroundImage);
 		replaceUrl(url);
 	})
-
 
 	return button;
 }
 
 //swaps the current url with new url
 function replaceUrl(url) {
-
 
 	// fetching the current tab url
 	chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
@@ -101,13 +116,14 @@ function replaceUrl(url) {
 		currentUrl = currentUrl.replace(urlArray[2], url);
 
 		let newTab = document.getElementById("toggle").checked;
-	// Logic for taking care of if the user wants a new window or not
+		// Logic for taking care of if the user wants a new window or not
 		if(newTab){
+			//creating new tab 
 			window.open(currentUrl);
 		} else{
+			// staying in the same tab
 			chrome.tabs.update(tabs[0].id, {url: currentUrl});
 		}
-
 	});
 }
 
@@ -159,11 +175,7 @@ clear.addEventListener("click", function(){
 	clearListOfUrls();
 });
 
-
 //fetches the created buttons
 fetchButtons();
-
-
-
 
 

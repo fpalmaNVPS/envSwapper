@@ -6,17 +6,23 @@
 </head>
 <style type="text/css">
 
-	button {
+	.functionality-button {
 		padding: 11px;
 		margin: 10px;
-		border-radius: 30%;
 	}
 
+
 	.circle-btn{
-		background: #97c83e;
+		padding: 11px;
+		margin: 10px;
+		height: 40px;
+		width: 40px;
   		text-align: center;
-  		border-radius: 100%;
-  		display: inline-flex;
+  		border-radius: 50%;
+  		background-position: top center;
+  		line-height: 50px;
+  		background-size: cover;
+  		display: inline-block;
   		flex-direction: column;
   		justify-content: center;
   		align-items: center;
@@ -64,8 +70,8 @@
 		left: 4px;
 		bottom: 4px;
 		background-color: white;
-		-webkit-transition: .4s;
-		transition: .4s;
+		-webkit-transition: .1s;
+		transition: .1;
 	}
 
 	input:checked + .slider {
@@ -98,12 +104,12 @@
 
 	<input type="" id="inputUrl" name="" placeholder="Url">
 	<br>
-	<button  class="trigger btn-primary btn-sm">Add Url</button>
+	<button  class="trigger btn-primary btn-sm functionality-button">Add Url</button>
 	<label class="switch">
 	  <input type="checkbox" id="toggle">
 	  <span class="slider round"></span>
 	</label>
-	<button id="clearUrlList" class="btn btn-secondary btn-sm">Clear</button>
+	<button id="clearUrlList" class="btn btn-secondary btn-sm functionality-button">Clear</button>
 
 </body>
 <script src="popup.js"></script>
