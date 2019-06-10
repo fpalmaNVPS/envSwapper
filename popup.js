@@ -16,7 +16,10 @@ function fetchButtons() {
 			chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
 				let currentbackgroundurl = tabs[0].url.split('/');
 
-				if((currentbackgroundurl[2].substring(0, 4) === "www." && currentbackgroundurl[2].substring(4) === result.keypairid) || currentbackgroundurl[2] === result.keypairid){
+				console.log(currentbackgroundurl);
+				console.log(result.keyPairId);
+				if((currentbackgroundurl[2].substring(0, 4) === "www." && currentbackgroundurl[2].substring(4) === result.keyPairId) || currentbackgroundurl[2] === result.keyPairId){
+					console.log("here");
 					button.style.border = "thick solid 	#ff0000";
 				}
 			})
@@ -85,9 +88,8 @@ function createButton(url){
 	} else if(url.includes("newvisions")){
 		button.style.backgroundImage = "url(assets/newvisions.png)";
 	} else{
-		// button.style.background = "#9400D3";
-		button.style.color = "white";
 		button.style.value = url.charAt(0);
+		button.style.background = "#9400D3";
 	}
 
 	button.style.backgroundRepeat = "no-repeat";
@@ -95,7 +97,7 @@ function createButton(url){
 	// create event listener that when pressed it replaces the current page url
 
 	button.addEventListener('click', function(){
-		console.log(button.style.backgroundImage);
+		console.log(button.style.value);
 		replaceUrl(url);
 	})
 
@@ -109,6 +111,11 @@ function replaceUrl(url) {
 	chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
 		//getting current tab url
 		let currentUrl = tabs[0].url;
+
+		if(!currentUrl.includes("https://")){
+			currentUrl = "https://" + currentUrl;
+		}
+
 		// split in order to get the domain
 		let urlArray = currentUrl.split('/');
 
