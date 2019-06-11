@@ -1,16 +1,14 @@
 // makes buttons so the urls that are already stored can be assigened to a button
 // when the extension icon is pressed
 function fetchButtons() {
-
 // div that we will use in order to add new buttons to that section
 	
-
 	//get the list of the urls
 	// make a button for each url
 	chrome.storage.local.get({userKeyIds: []}, function(result){
 		result.userKeyIds.forEach(function(result){
 
-			let button = createButton(result.keyPairId);
+			let button = createButton(result.keyPairId, result.buttonId);
 			// checking the current background tab to see if it matches any of the url buttons
 			// if so, highlight its border
 			chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
@@ -20,7 +18,7 @@ function fetchButtons() {
 					button.style.border = "thick solid 	#ff0000";
 				}
 			})
-		
+			
 			//appending button to the popup
 			appendButton(button);
 		});
@@ -40,16 +38,13 @@ function addButton(keyPairId) {
 		keyPairId = keyPairId.replace("www.", "");
 	}
 	
-
-
-	let button = createButton(keyPairId);
-
+	let id = getUniqueId();
 
 	chrome.storage.local.get({userKeyIds: []}, function (result) {
     // the input argument is ALWAYS an object containing the queried keys
     // so we select the key we need
     	let userKeyIds = result.userKeyIds;
-    	userKeyIds.push({keyPairId: keyPairId, buttonId: button.id});
+    	userKeyIds.push({keyPairId: keyPairId, buttonId: id});
     	// set the new array value to the same key
     	chrome.storage.local.set({userKeyIds: userKeyIds}, function () {
         // you can use strings instead of objects
@@ -60,10 +55,11 @@ function addButton(keyPairId) {
     	});
 	});
 
+	let button = createButton(keyPairId, id);
 	appendButton(button);
 }
 
-function createButton(url){
+function createButton(url, buttonId){
 	
 	// setting the passed url into storage
 	let button = document.createElement("button");
@@ -71,7 +67,7 @@ function createButton(url){
 
 	button.classList.add("circle-btn");
 
-	button.id = getUniqueId();
+	button.id = buttonId;
 
 	button.style.backgroundImage = "url(" + getFavicon(url) + ")";
 
@@ -80,12 +76,17 @@ function createButton(url){
 	// create event listener that when pressed it replaces the current page url
 
 	button.addEventListener('click', function(){
-		if(editMode){
-			//Display the url on the url input bar
-			newUrl.value = url;
-
-			// update url
-			updateUrl(newUrl.value, this.id);
+		if(deleteMode){
+			//delteing pressed button
+			chrome.storage.local.get({userKeyIds: []}, function(result){
+				for(let i = 0; i < result.userKeyIds.length; i++){
+					if(result.userKeyIds[i].buttonId === button.id){
+						console.log("here");
+						deleteButton(i);
+						break;
+					}
+				}
+			});
 		} else{
 			replaceUrl(url);
 		}
@@ -93,7 +94,7 @@ function createButton(url){
 
 	return button;
 }
-
+// appends button to popup
 function appendButton(button){
 	let page = document.getElementById("buttonDiv");
 
@@ -138,21 +139,23 @@ function getFavicon(url){
 
 // clears every saved url in the list
 // will use later for delete option
-function clearListOfUrls() {
-	chrome.storage.local.clear(function(){
-		let error = chrome.runtime.lastError;
+function deleteButton(index) {
+	chrome.storage.local.get({userKeyIds: []}, function(result){
 
-		if(error) {
-			console.error(error);
-		} else{
-			console.log("Cleared List of Urls");
-		}
-	})
+		let userKeyIds = result.userKeyIds;
+		userKeyIds.splice(index, 1);
+
+		chrome.storage.local.set({userKeyIds: result.userKeyIds}, function(){
+			console.log("deleted");
+		});
+	});
 
 	document.getElementById('buttonDiv').innerHTML = "";
+	fetchButtons();
+	location.reload();
 }
 
-
+// generates unique id for deleting purposes
 function getUniqueId(){
 	return Math.random().toString(36);
 }
@@ -165,8 +168,8 @@ let clear = document.getElementById("clearUrlList");
 
 let newUrl = document.getElementById("inputUrl");
 
-// boolean that allows us to edit and delete urls 
-let editMode = false; 
+// boolean that allows us to edit and delete buttons
+let deleteMode = false; 
 
 let urlChange = false;
 
@@ -189,18 +192,16 @@ trigger.addEventListener("click", function(){
 
 // event listener for the clear List button
 clear.addEventListener("click", function(){
-	//clearListOfUrls();
-	// if(!editMode){
-	// 	trigger.firstChild.nodeValue = "Enter";
-	// 	this.firstChild.nodeValue = "Done";
-	// 	editMode = true;
-	// } else{
-	// 	trigger.firstChild.nodeValue = "Add Url";
-	// 	this.firstChild.nodeValue = "Edit Mode";
-	// 	newUrl.value = "";
-	// 	editMode = false;
-	// }
-	clearListOfUrls();
+	if(!deleteMode){
+		trigger.firstChild.nodeValue = "Enter";
+		this.firstChild.nodeValue = "Done";
+		deleteMode = true;
+	} else{
+		trigger.firstChild.nodeValue = "Add Url";
+		this.firstChild.nodeValue = "Delete";
+		newUrl.value = "";
+		deleteMode = false;
+	}
 });
 
 // fetches the created buttons
