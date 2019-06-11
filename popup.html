@@ -7,26 +7,32 @@
 <style type="text/css">
 
 	.functionality-button {
-		padding: 11px;
-		margin: 10px;
+		
 	}
 
+	.button-container{
+		position: sticky;
+		top: 20px;
+		padding-left: 10px;
+		padding-right: 10px;
+		padding-bottom: 10px;
+	}
 
 	.circle-btn{
-		padding: 11px;
-		margin: 10px;
+		padding-bottom: 3px;
+		margin-bottom: 14px;
 		height: 40px;
 		width: 40px;
 		position: relative;
-  		text-align: center;
+  		text-align: top center;
   		border-radius: 50%;
   		background-position: top center;
-  		line-height: 0;
+  		line-height: 20px;
   		background-size: cover;
-  		display: inline-block;
+  		display: flex;
   		flex-direction: column;
   		justify-content: top center;
-  		align-items: top center;
+  		align-items: center;
   		font-size: 100px;
   		color: white;
   		font-weight: bold;
@@ -99,22 +105,46 @@
 	}
 
 	.newtab-text{
-		font-size: 12px;
+		font-size: 10px;
 	}
+
+	.switch-container{
+		padding: 10px;
+	}
+
+
+	.container {
+		width: 95%;
+		padding: 10px;
+		overflow: auto;
+	}
+
+	.left{
+		margin-bottom: 33px;
+	}
+
+
 </style>
 <body>
 	
-	<div id="buttonDiv"></div>	
+	<div class="switch-container">
+		<label class="switch">
+	  	<input type="checkbox" id="toggle">
+	 	<span class="slider round"></span>
+		</label>
+		<span class="newtab-text">Open In New Tab</span>
+	</div>
 
-	<input type="" id="inputUrl" name="" placeholder="Url">
-	<br>
-	<button  class="trigger btn-primary btn-sm functionality-button">Add Url</button>
-	<label class="switch">
-	  <input type="checkbox" id="toggle">
-	  <span class="slider round"></span>
-	</label>
-	<span class="newtab-text">New Tab</span>
-	<button id="clearUrlList" class="btn btn-secondary btn-sm functionality-button">Clear</button>
+	<div id="buttonDiv" class="container">
+	</div>
+	
+
+
+	<div class="button-container">
+		<input type="" id="inputUrl" name="" placeholder="Url">
+		<button id = "addUrl" class="btn btn-primary btn-block functionality-button ">Add Url</button>
+		<button id="clearUrlList" class="btn btn-secondary btn-block functionality-button">Clear List</button>
+	</div>
 
 </body>
 <script src="popup.js"></script>

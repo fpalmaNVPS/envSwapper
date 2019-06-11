@@ -3,7 +3,7 @@
 function fetchButtons() {
 
 // div that we will use in order to add new buttons to that section
-	let page = document.getElementById('buttonDiv');
+	
 
 	//get the list of the urls
 	// make a button for each url
@@ -16,26 +16,22 @@ function fetchButtons() {
 			chrome.tabs.query({'active': true, 'currentWindow': true}, function(tabs){
 				let currentbackgroundurl = tabs[0].url.split('/');
 
-				console.log(currentbackgroundurl);
-				console.log(result.keyPairId);
 				if((currentbackgroundurl[2].substring(0, 4) === "www." && currentbackgroundurl[2].substring(4) === result.keyPairId) || currentbackgroundurl[2] === result.keyPairId){
-					console.log("here");
 					button.style.border = "thick solid 	#ff0000";
 				}
 			})
-			
+		
 			//appending button to the popup
-			page.appendChild(button);
+			appendButton(button);
 		});
 	});
-}
-
+ }
 
 
 // First lets fetch all the urls that have been made and then we make buttons for each
 // we can later listen for the add function in order to add new urls
 function addButton(keyPairId) {
-
+	// keyPairId = url
 	if(keyPairId.includes("https://")){
 		keyPairId = keyPairId.replace("https://", "");
 	}
@@ -44,10 +40,10 @@ function addButton(keyPairId) {
 		keyPairId = keyPairId.replace("www.", "");
 	}
 	
-	// div that we will use in order to add new buttons to that section
-	let page = document.getElementById('buttonDiv');
+
 
 	let button = createButton(keyPairId);
+
 
 	chrome.storage.local.get({userKeyIds: []}, function (result) {
     // the input argument is ALWAYS an object containing the queried keys
@@ -64,7 +60,7 @@ function addButton(keyPairId) {
     	});
 	});
 
-	page.appendChild(button);
+	appendButton(button);
 }
 
 function createButton(url){
@@ -77,31 +73,32 @@ function createButton(url){
 
 	button.id = getUniqueId();
 
-	if(url.includes("google")){
-		button.style.backgroundImage = "url(assets/google.png)";
-	} else if(url.includes("facebook")){
-		button.style.backgroundImage = "url(assets/facebook.png)";
-	} else if(url.includes("firebase")){
-		button.style.backgroundImage = "url(assets/firebase.png)";
-	} else if(url.includes("github")){
-		button.style.backgroundImage = "url(assets/github.png)";
-	} else if(url.includes("newvisions")){
-		button.style.backgroundImage = "url(assets/newvisions.png)";
-	} else{
-		button.style.value = url.charAt(0);
-		button.style.background = "#9400D3";
-	}
+	button.style.backgroundImage = "url(" + getFavicon(url) + ")";
 
 	button.style.backgroundRepeat = "no-repeat";
 
 	// create event listener that when pressed it replaces the current page url
 
 	button.addEventListener('click', function(){
-		console.log(button.style.value);
-		replaceUrl(url);
+		if(editMode){
+			//Display the url on the url input bar
+			newUrl.value = url;
+
+			// update url
+			updateUrl(newUrl.value, this.id);
+		} else{
+			replaceUrl(url);
+		}
 	})
 
 	return button;
+}
+
+function appendButton(button){
+	let page = document.getElementById("buttonDiv");
+
+	page.appendChild(button);
+
 }
 
 //swaps the current url with new url
@@ -123,7 +120,7 @@ function replaceUrl(url) {
 		currentUrl = currentUrl.replace(urlArray[2], url);
 
 		let newTab = document.getElementById("toggle").checked;
-		// Logic for taking care of if the user wants a new window or not
+		// Logic for taking care of if the user wants a new tab or not
 		if(newTab){
 			//creating new tab 
 			window.open(currentUrl);
@@ -133,6 +130,11 @@ function replaceUrl(url) {
 		}
 	});
 }
+
+function getFavicon(url){
+	return "https://plus.google.com/_/favicon?domain=" + url;
+}
+
 
 // clears every saved url in the list
 // will use later for delete option
@@ -156,20 +158,28 @@ function getUniqueId(){
 }
 
 
-
 // make a new url button
-let trigger = document.querySelector(".trigger");
+let trigger = document.getElementById("addUrl");
 
 let clear = document.getElementById("clearUrlList");
 
 let newUrl = document.getElementById("inputUrl");
+
+// boolean that allows us to edit and delete urls 
+let editMode = false; 
+
+let urlChange = false;
 
 // evenet listener for when we want to add a new button associated with a new url
 trigger.addEventListener("click", function(){
 	
 	if(newUrl.value === ""){
 		alert("Url field is empty. Please enter a url.");
-	} else{
+	} 
+	
+	//else if(this.firstChild.nodeValue === "Enter" ){}
+
+	else{
 		addButton(newUrl.value);
 	}
 	
@@ -179,10 +189,19 @@ trigger.addEventListener("click", function(){
 
 // event listener for the clear List button
 clear.addEventListener("click", function(){
+	//clearListOfUrls();
+	// if(!editMode){
+	// 	trigger.firstChild.nodeValue = "Enter";
+	// 	this.firstChild.nodeValue = "Done";
+	// 	editMode = true;
+	// } else{
+	// 	trigger.firstChild.nodeValue = "Add Url";
+	// 	this.firstChild.nodeValue = "Edit Mode";
+	// 	newUrl.value = "";
+	// 	editMode = false;
+	// }
 	clearListOfUrls();
 });
 
-//fetches the created buttons
+// fetches the created buttons
 fetchButtons();
-
-
