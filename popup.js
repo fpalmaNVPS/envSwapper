@@ -1,6 +1,6 @@
 // makes buttons so the urls that are already stored can be assigened to a button
 // when the extension icon is pressed
-function fetchButtons() {
+function fetchButtons(){
 // div that we will use in order to add new buttons to that section
 	
 	//get the list of the urls
@@ -60,7 +60,7 @@ function addButton(keyPairId) {
 }
 
 function createButton(url, buttonId){
-	
+	 
 	// setting the passed url into storage
 	let button = document.createElement("button");
 	//creating unique id for each button
@@ -76,24 +76,22 @@ function createButton(url, buttonId){
 	// create event listener that when pressed it replaces the current page url
 
 	button.addEventListener('click', function(){
-		if(deleteMode){
-			//delteing pressed button
-			chrome.storage.local.get({userKeyIds: []}, function(result){
-				for(let i = 0; i < result.userKeyIds.length; i++){
-					if(result.userKeyIds[i].buttonId === button.id){
-						console.log("here");
-						deleteButton(i);
-						break;
-					}
-				}
-			});
+
+		if(deleteMode && button.style.border !== ""){
+			button.style.border = "";
+			pickedToDelete.splice(pickedToDelete.indexOf(button.id), 1);
+		} else if(deleteMode){
+			button.style.border = "thick solid 	#ff0000";
+			pickedToDelete.push(button.id);
 		} else{
 			replaceUrl(url);
 		}
 	})
 
+
 	return button;
 }
+
 // appends button to popup
 function appendButton(button){
 	let page = document.getElementById("buttonDiv");
@@ -132,18 +130,21 @@ function replaceUrl(url) {
 	});
 }
 
-function getFavicon(url){
-	return "https://plus.google.com/_/favicon?domain=" + url;
-}
-
 
 // clears every saved url in the list
 // will use later for delete option
-function deleteButton(index) {
+function deleteButtons(list) {
 	chrome.storage.local.get({userKeyIds: []}, function(result){
 
 		let userKeyIds = result.userKeyIds;
-		userKeyIds.splice(index, 1);
+		
+		for(let i = 0; i < list.length; i++){
+			for(let j = 0; j < userKeyIds.length; j++){
+				if(list[i] === userKeyIds[j].buttonId){
+					userKeyIds.splice(j, 1);
+				}
+			}
+		}
 
 		chrome.storage.local.set({userKeyIds: result.userKeyIds}, function(){
 			console.log("deleted");
@@ -160,6 +161,10 @@ function getUniqueId(){
 	return Math.random().toString(36);
 }
 
+function getFavicon(url){
+	return "https://plus.google.com/_/favicon?domain=" + url;
+}
+
 
 // make a new url button
 let trigger = document.getElementById("addUrl");
@@ -173,16 +178,17 @@ let deleteMode = false;
 
 let urlChange = false;
 
+let pickedToDelete = [];
+
+
 // evenet listener for when we want to add a new button associated with a new url
 trigger.addEventListener("click", function(){
 	
-	if(newUrl.value === ""){
+	if(trigger.firstChild.nodeValue === "Cancel"){
+		location.reload();
+	} else if(newUrl.value === ""){
 		alert("Url field is empty. Please enter a url.");
-	} 
-	
-	//else if(this.firstChild.nodeValue === "Enter" ){}
-
-	else{
+	} else{
 		addButton(newUrl.value);
 	}
 	
@@ -193,12 +199,13 @@ trigger.addEventListener("click", function(){
 // event listener for the clear List button
 clear.addEventListener("click", function(){
 	if(!deleteMode){
-		trigger.firstChild.nodeValue = "Enter";
-		this.firstChild.nodeValue = "Done";
+		trigger.firstChild.nodeValue = "Cancel";
+		this.firstChild.nodeValue = "Delete";
 		deleteMode = true;
 	} else{
+		deleteButtons(pickedToDelete);
 		trigger.firstChild.nodeValue = "Add Url";
-		this.firstChild.nodeValue = "Delete";
+		this.firstChild.nodeValue = "Select To Delete";
 		newUrl.value = "";
 		deleteMode = false;
 	}
