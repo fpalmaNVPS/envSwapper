@@ -83,7 +83,11 @@ function createButton(url, buttonId){
 		} else if(deleteMode){
 			button.style.border = "thick solid 	#ff0000";
 			pickedToDelete.push(button.id);
-		} else{
+		} else if(editMode){
+			button.style.border = "thick solid 	#00FFFF";
+			updateButtonId = button.id;
+			newUrl.value = url;
+		}else{
 			replaceUrl(url);
 		}
 	})
@@ -130,6 +134,25 @@ function replaceUrl(url) {
 	});
 }
 
+function updateUrl(updatedUrl, id){
+	chrome.storage.local.get({userKeyIds: []}, function(result){
+		let userKeyIds = result.userKeyIds;
+		for(let i = 0; i < userKeyIds.length; i++){
+			console.log(userKeyIds[i].buttonId);
+			console.log(id);
+			if(userKeyIds[i].buttonId === id){
+				console.log(userKeyIds[i].keyPairId);
+				userKeyIds[i].keyPairId = updatedUrl;
+				break;
+			}
+		}
+
+		chrome.storage.local.set({userKeyIds: userKeyIds}, function(){
+			console.log("changed Url!!");
+		})
+	})
+}
+
 
 // clears every saved url in the list
 // will use later for delete option
@@ -173,12 +196,17 @@ let clear = document.getElementById("clearUrlList");
 
 let newUrl = document.getElementById("inputUrl");
 
+let edit = document.getElementById("editButtonUrl");
 // boolean that allows us to edit and delete buttons
 let deleteMode = false; 
+
+let editMode = false;
 
 let urlChange = false;
 
 let pickedToDelete = [];
+
+let updateButtonId = null;
 
 
 // evenet listener for when we want to add a new button associated with a new url
@@ -210,6 +238,23 @@ clear.addEventListener("click", function(){
 		deleteMode = false;
 	}
 });
+
+// event listener for editing existing urls
+edit.addEventListener("click", function(){
+	if(this.firstChild.nodeValue === "Edit"){
+		trigger.firstChild.nodeValue = "Cancel";
+		this.firstChild.nodeValue = "Save Changes";
+		editMode = true;
+	} else{
+		updateUrl(newUrl.value, updateButtonId);
+		document.getElementById("buttonDiv").innerHTML = "";
+		newUrl.value = "";
+		this.firstChild.nodeValue = "Edit";
+		updateButtonId = null;
+		editMode = false;
+		location.reload();
+	}
+})
 
 // fetches the created buttons
 fetchButtons();
